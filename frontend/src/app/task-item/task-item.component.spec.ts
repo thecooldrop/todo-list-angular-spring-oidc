@@ -14,7 +14,7 @@ describe('TaskItemComponent', () => {
 
     fixture = TestBed.createComponent(TaskItemComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+
   });
 
   it('should create', () => {
@@ -22,8 +22,10 @@ describe('TaskItemComponent', () => {
   });
 
   it('should contain task title in DOM', () => {
+    fixture.componentRef.setInput('title', "Some Task Title")
+    fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.task-title')?.textContent).toContain('Task Title');
+    expect(compiled.querySelector('.task-title')?.textContent).toContain('Some Task Title');
   });
 
 })
