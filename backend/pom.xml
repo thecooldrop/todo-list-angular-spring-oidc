@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>thecooldrop.github.com</groupId>
 	<artifactId>todo-backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1-</version>
 	<name>todo-backend</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>23</java.version>
+		
 	</properties>
 	<dependencies>
 		<dependency>
@@ -112,6 +113,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>app</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
