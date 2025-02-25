@@ -1,0 +1,7 @@
+<ul>
+    @for(task of tasks; track $index) {
+        <li>
+            <app-task-item [title]="task"/>
+        </li>
+    }
+</ul>
