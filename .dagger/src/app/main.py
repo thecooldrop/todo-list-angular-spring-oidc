@@ -1,23 +1,43 @@
 import dagger
 from dagger import dag, function, object_type
 
+DEFAULT_NODE_IMAGE = "node:22.14-bookworm"
+
 
 @object_type
 class App:
+
+    def init_frontend(self, app_dir: dagger.Directory) -> dagger.Container:
+        """Initializes the frontend"""
+        return (
+            dag.container()
+            .from_(DEFAULT_NODE_IMAGE)
+            .with_directory("/app", app_dir)
+            .with_workdir("/app")
+            .with_exec(["npm", "install"])
+        )
+    
     @function
-    def container_echo(self, string_arg: str) -> dagger.Container:
-        """Returns a container that echoes whatever string argument is provided"""
-        return dag.container().from_("alpine:latest").with_exec(["echo", string_arg])
+    def test_frontend_ng(self, app_dir: dagger.Directory, node_image: str = DEFAULT_NODE_IMAGE) -> dagger.Container:
+        """Tests the frontend"""
+        return (
+            self.init_frontend(app_dir)
+            .with_env_variable("CACHE_BUSTER","1")
+            .with_exec(["npm", "run", "test"])
+        )
+    
+    @function
+    def build_frontend_ng(self, app_dir: dagger.Directory, node_image: str = DEFAULT_NODE_IMAGE) -> dagger.Container:
+        """Builds the frontend"""
+        return self.test_frontend_ng(app_dir, node_image).with_exec(["npm", "run", "build"])
 
     @function
-    async def grep_dir(self, directory_arg: dagger.Directory, pattern: str) -> str:
-        """Returns lines that match a pattern in the files of the provided Directory"""
-        return await (
+    def build_frontend_image(self, app_dir: dagger.Directory, node_image: str = DEFAULT_NODE_IMAGE) -> dagger.Container:
+        """Builds the frontend image"""
+        app_build = self.build_frontend_ng(app_dir, node_image)
+        return (
             dag.container()
-            .from_("alpine:latest")
-            .with_mounted_directory("/mnt", directory_arg)
-            .with_workdir("/mnt")
-            .with_exec(["grep", "-R", pattern, "."])
-            .stdout()
+            .from_("nginx:1.25.3-bookworm")
+            .with_exposed_port(description="HTTP", port=80)
+            .with_directory("/usr/share/nginx/html", app_build.directory("/app/dist/frontend/browser"))
         )
-        
